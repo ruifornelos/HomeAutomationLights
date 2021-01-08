@@ -1,0 +1,2 @@
+include ':app' , ':rxbluetoothkotlin-core'
+rootProject.name = "HomeAutomationLights"
