@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "pm.ersc.estg.homeautomationlights"
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -44,7 +44,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     implementation 'org.jetbrains.anko:anko:0.10.8'
-    implementation 'com.github.quickpermissions:quickpermissions-kotlin:0.4.0'
+    //implementation 'com.github.quickpermissions:quickpermissions-kotlin:0.4.0'
 
 
 

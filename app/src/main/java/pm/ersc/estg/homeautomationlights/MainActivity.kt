@@ -1,7 +1,5 @@
 package pm.ersc.estg.homeautomationlights
 
-import android.Manifest
-import android.app.admin.ConnectEvent
 import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanFilter
@@ -9,19 +7,18 @@ import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.ParcelUuid
 import android.util.Log
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.Switch
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
-import org.jetbrains.anko.Android
 import org.jetbrains.anko.toast
 import java.util.*
+import java.util.jar.Manifest
 
 
 class MainActivity : AppCompatActivity() {
@@ -29,7 +26,8 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private val TAG = "****"
         const val REQUEST_ENABLE_BT = 1
-        const val UUIDservice = "ab0828b1-198e-4351-b779-901fa0e0371e"
+        val FINE_LOC_RQ = 101
+        const val UUIDservice = "da8753f9-b3f3-4203-a589-00c2ce38f044"
     }
 
     private val bluetoothAdapter: BluetoothAdapter by lazy {
@@ -42,17 +40,19 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         //Variables (Buttons and Textviews)////////////////////////////////////
-        val connectedtextview = findViewById<TextView>(R.id.connectedDevice)
-        val ConnectDevice = findViewById<Button>(R.id.selectdevice)
-        val DisconnectDevice = findViewById<Button>(R.id.disconnect_from_device)
-        val RedSelection = findViewById<Button>(R.id.REDButton)
-        val GreenSelection = findViewById<Button>(R.id.GREENButton)
-        val BlueSelection = findViewById<Button>(R.id.BLUEButton)
-        val SwitchONOFF = findViewById<Switch>(R.id.switch1)
+        val divisionTextView = findViewById<TextView>(R.id.divisionPrint)
+        val luminosityTextView = findViewById<TextView>(R.id.LuminosityLevels)
+        val connectDevice = findViewById<Button>(R.id.connect)
+        val disconnectDevice = findViewById<Button>(R.id.disconnect)
+        val bedroomButton = findViewById<ImageButton>(R.id.BedRoomButton)
+        val libraryButton = findViewById<ImageButton>(R.id.LibraryButton)
+        val kitchenButton = findViewById<ImageButton>(R.id.KitchenButton)
+        val bathroomButton = findViewById<ImageButton>(R.id.BathroomButton)
+        val switchONOFF = findViewById<Switch>(R.id.switch1)
         /////////////////////////////////////////////////////////////////////////
 
         //Switch Button ////////////////////////////////////////////////////////
-        SwitchONOFF?.setOnCheckedChangeListener { _, onSwitch ->
+        switchONOFF?.setOnCheckedChangeListener { _, onSwitch ->
             if (onSwitch) {
                 toast("liga")
             } else {
@@ -61,12 +61,26 @@ class MainActivity : AppCompatActivity() {
         }
 
         //Scanner Button
-        ConnectDevice?.setOnClickListener() { }
+        connectDevice?.setOnClickListener() { }
 
-        //Color Buttons and actions
-        RedSelection?.setOnClickListener() { toast("Red Color") }
-        GreenSelection?.setOnClickListener() { toast("Green Color") }
-        BlueSelection?.setOnClickListener() { toast("Blue Color") }
+        bathroomButton?.setOnClickListener(){
+            divisionTextView.setText("The light from Bathroom was selected")
+            //lalalalalalalalal
+        }
+
+        kitchenButton?.setOnClickListener(){
+            divisionTextView.setText("The light from Kitchen was selected")
+            //lalalalalalalalal
+        }
+        libraryButton?.setOnClickListener(){
+            divisionTextView.setText("The light from Library was selected")
+            //lalalalalalalalal
+        }
+
+        bedroomButton?.setOnClickListener(){
+            divisionTextView.setText("The light from Bedroom was selected")
+            //lalalalalalalalal
+        }
     }
 
 
@@ -89,26 +103,32 @@ class MainActivity : AppCompatActivity() {
         val uuid = ParcelUuid(serviceUUID)
         val filter = ScanFilter.Builder().setServiceUuid(uuid).build()
         val filters = listOf(filter)
-
         val settings = ScanSettings.Builder()
             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
 
         Log.v(TAG, "Start Scan pt2")
 
-        context.runWithPermissions(Manifest.permission.ACCESS_FINE_LOCATION){
+        if(checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+            toast("Permission for location is enabled!")
             bluetoothAdapter.bluetoothLeScanner.startScan(filters, settings, bleScanCallback)
-        }
+        } else {
 
+            if(shouldShowRequestPermissionRationale(android.Manifest.permission.ACCESS_FINE_LOCATION)){
+                toast("Permission of location needed")
+            }
+            //requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION} , FINE_LOC_RQ)
+        }
     }
+
 
     private val bleScanCallback = object : ScanCallback() {
         override fun onBatchScanResults(results: MutableList<ScanResult>?) {
-        results?.forEach{ result -> deviceFound(result.device)}
+            results?.forEach { result -> deviceFound(result.device) }
         }
 
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
-            //result?.let { deviceFound(result.device) }
-            Log.v(TAG,"Founded Device : " + "${result?.device}")
+            result?.let { deviceFound(result.device) }
+            Log.v(TAG, "Founded Device : " + "${result?.device}")
         }
 
         override fun onScanFailed(errorCode: Int) {
@@ -120,7 +140,6 @@ class MainActivity : AppCompatActivity() {
     private fun deviceFound(device: BluetoothDevice){
         device.connectGatt(this, true, gattCallback)
     }
-
 
     private val gattCallback = object : BluetoothGattCallback(){
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {

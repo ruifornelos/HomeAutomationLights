@@ -4,40 +4,78 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:background="@color/grey">
 
     <LinearLayout
+        android:layout_marginTop="30dp"
+        android:id="@+id/linearA"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true">
-        <Button
-            android:id="@+id/REDButton"
-            android:layout_weight="1"
-            android:backgroundTint="@color/red"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Red" />
+        android:layout_alignParentTop="true">
 
-        <Button
-            android:id="@+id/GREENButton"
-            android:backgroundTint="@color/green"
+        <ImageButton
+            android:id="@+id/BedRoomButton"
+            android:backgroundTint="@color/black"
             android:layout_weight="1"
-            android:layout_marginLeft="1dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Green" />
+            android:layout_height="70dp"
+            android:src="@drawable/bed_clips"/>
+        <ImageButton
+            android:id="@+id/KitchenButton"
+            android:backgroundTint="@color/black"
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="70dp"
+            android:src="@drawable/kitchen_clips"/>
+    </LinearLayout>
 
-        <Button
-            android:id="@+id/BLUEButton"
-            android:backgroundTint="@color/blue"
+    <LinearLayout
+        android:id="@+id/linearB"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linearA"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/LibraryButton"
+            android:backgroundTint="@color/black"
             android:layout_weight="1"
-            android:layout_marginLeft="1dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Blue" />
+            android:layout_height="70dp"
+            android:src="@drawable/library_clips"/>
+        <ImageButton
+            android:id="@+id/BathroomButton"
+            android:backgroundTint="@color/black"
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="70dp"
+            android:src="@drawable/wc_clips" />
+
 
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/divisionPrint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linearB"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"
+        android:text="The light from xxx was selected"
+        android:textColor="@color/black"/>
+
+    <TextView
+        android:id="@+id/LuminosityLevels"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/switch1"
+        android:layout_centerHorizontal="true"
+        android:text="Luminosity Level"
+        android:layout_marginBottom="25dp"
+        android:textColor="@color/black"
+        />
 
     <Switch
         android:id="@+id/switch1"
@@ -46,34 +84,26 @@
         android:text="Light"
         android:layout_centerInParent="true"/>
 
-    <TextView
-        android:id="@+id/connectedDevice"
+    <Button
+        android:id="@+id/connect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/switch1"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
-        android:text="Connected to Device ABC..."/>
-
-    <Button
-        android:id="@+id/selectdevice"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/connectedDevice"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="4dp"
-        android:hint="Select Device"
+        android:layout_marginTop="40dp"
+        android:hint="Connect"
         android:textColorHint="@color/white"
+        android:backgroundTint="@color/black"
         />
     <Button
-        android:id="@+id/disconnect_from_device"
+        android:id="@+id/disconnect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/selectdevice"
+        android:layout_below="@+id/connect"
         android:layout_centerHorizontal="true"
         android:hint="Disconnect from Device"
         android:textColorHint="@color/white"
+        android:backgroundTint="@color/black"
         />
-
 
 </RelativeLayout>
