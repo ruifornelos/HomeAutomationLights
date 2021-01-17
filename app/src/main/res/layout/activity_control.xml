@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
+    tools:context=".ControlActivity"
     android:background="@color/grey">
 
     <LinearLayout
@@ -85,21 +85,10 @@
         android:layout_centerInParent="true"/>
 
     <Button
-        android:id="@+id/connect"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/switch1"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="40dp"
-        android:hint="Connect"
-        android:textColorHint="@color/white"
-        android:backgroundTint="@color/black"
-        />
-    <Button
         android:id="@+id/disconnect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/connect"
+        android:layout_below="@+id/switch1"
         android:layout_centerHorizontal="true"
         android:hint="Disconnect from Device"
         android:textColorHint="@color/white"

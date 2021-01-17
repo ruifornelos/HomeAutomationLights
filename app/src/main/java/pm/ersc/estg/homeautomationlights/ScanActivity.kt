@@ -2,44 +2,39 @@ package pm.ersc.estg.homeautomationlights
 
 import android.Manifest
 import android.app.Activity
-import android.app.admin.ConnectEvent
-import android.bluetooth.*
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
-import android.os.Bundle
-import android.os.ParcelUuid
-import android.util.Log
-import android.widget.Button
-import android.widget.Switch
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.widget.Button
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
-import org.jetbrains.anko.Android
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.SimpleItemAnimator
 import org.jetbrains.anko.alert
-import org.jetbrains.anko.toast
 import pm.ersc.estg.homeautomationlights.ble.ConnectionManager
 import timber.log.Timber
-import java.util.*
+import kotlinx.android.synthetic.main.activity_scan.scan_button
+import kotlinx.android.synthetic.main.activity_scan.scan_results_recycler_view
+import pm.ersc.estg.homeautomationlights.ble.ConnectionEventListener
+
 
 private const val ENABLE_BLUETOOTH_REQUEST_CODE = 1
 private const val LOCATION_PERMISSION_REQUEST_CODE = 2
-private const val TAG = "****"
 private const val ServUUID = "ab0828b1-198e-4351-b779-901fa0e0371e"
 private const val CHARUUID = "4ac8a682-9736-4e5d-932b-e9b31405049c"
-private const val RED = 0x11
 
-class MainActivity : AppCompatActivity() {
-    private var blueDevice: BluetoothDevice? = null
-    private lateinit var ledCharacteristic: BluetoothGattCharacteristic
-
+class ScanActivity : AppCompatActivity() {
     private val bluetoothAdapter: BluetoothAdapter by lazy {
         val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothManager.adapter
@@ -54,12 +49,23 @@ class MainActivity : AppCompatActivity() {
         .build()
 
     private var isScanning = false
-    /*set(value) {
+    set(value) {
         field = value
-        runOnUiThread { connectDevice.text = if (value) "Stop Scan" else "Start Scan" }
-    }*/
+        runOnUiThread { scan_button.text = if (value) getString(R.string.stop_scan) else getString(R.string.start_scan) }
+    }
 
     private val scanResults = mutableListOf<ScanResult>()
+    private val scanResultAdapter: ScanResultAdapter by lazy {
+        ScanResultAdapter(scanResults) { result ->
+            if (isScanning) {
+                stopBleScan()
+            }
+            with(result.device) {
+                Timber.w("Connecting to $address")
+                ConnectionManager.connect(this, this@ScanActivity)
+            }
+        }
+    }
 
     private val isLocationPermissionGranted
         get() = hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -68,45 +74,36 @@ class MainActivity : AppCompatActivity() {
      * Activity function overrides
      *******************************************/
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
+        setContentView(R.layout.activity_scan)
+        val connectDevice = findViewById<Button>(R.id.scan_button)
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
-
-        //Variables (Buttons and Textviews)////////////////////////////////////
-        val connectedtextview = findViewById<TextView>(R.id.connectedDevice)
-        val connectDevice = findViewById<Button>(R.id.selectdevice)
-        val DisconnectDevice = findViewById<Button>(R.id.disconnect_from_device)
-        val RedSelection = findViewById<Button>(R.id.REDButton)
-        val GreenSelection = findViewById<Button>(R.id.GREENButton)
-        val BlueSelection = findViewById<Button>(R.id.BLUEButton)
-        val SwitchONOFF = findViewById<Switch>(R.id.switch1)
-        /////////////////////////////////////////////////////////////////////////
-
-        //Switch Button ////////////////////////////////////////////////////////
-        SwitchONOFF?.setOnCheckedChangeListener { _, onSwitch ->
-            if (onSwitch) {
-                toast("liga")
-            } else {
-                toast("desliga")
-            }
-        }
-
         //Scanner Button
         connectDevice?.setOnClickListener() { if (isScanning) stopBleScan() else startBleScan() }
 
-        //Color Buttons and actions
-        RedSelection?.setOnClickListener() {
-            //ConnectionManager.writeCharacteristic(blueDevice, ,0x11)
+        setupRecyclerView()
+    }
 
+    override fun onResume() {
+        super.onResume()
+        ConnectionManager.registerListener(connectionEventListener)
+        if (!bluetoothAdapter.isEnabled) {
+            promptEnableBluetooth()
         }
+    }
 
-        GreenSelection?.setOnClickListener() { toast("Green Color") }
-        BlueSelection?.setOnClickListener() { toast("Blue Color") }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            ENABLE_BLUETOOTH_REQUEST_CODE -> {
+                if (resultCode != Activity.RESULT_OK) {
+                    promptEnableBluetooth()
+                }
+            }
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -126,6 +123,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /*******************************************
+     * Private functions
+     *******************************************/
+
     private fun promptEnableBluetooth() {
         if (!bluetoothAdapter.isEnabled) {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
@@ -138,7 +139,7 @@ class MainActivity : AppCompatActivity() {
             requestLocationPermission()
         } else {
             scanResults.clear()
-            //scanResultAdapter.notifyDataSetChanged()
+            scanResultAdapter.notifyDataSetChanged()
             bleScanner.startScan(null, scanSettings, scanCallback)
             isScanning = true
         }
@@ -169,6 +170,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupRecyclerView() {
+        scan_results_recycler_view.apply {
+            adapter = scanResultAdapter
+            layoutManager = LinearLayoutManager(
+                this@ScanActivity,
+                RecyclerView.VERTICAL,
+                false
+            )
+            isNestedScrollingEnabled = false
+        }
+
+        val animator = scan_results_recycler_view.itemAnimator
+        if (animator is SimpleItemAnimator) {
+            animator.supportsChangeAnimations = false
+        }
+    }
+
     /*******************************************
      * Callback bodies
      *******************************************/
@@ -178,24 +196,46 @@ class MainActivity : AppCompatActivity() {
             val indexQuery = scanResults.indexOfFirst { it.device.address == result.device.address }
             if (indexQuery != -1) { // A scan result already exists with the same address
                 scanResults[indexQuery] = result
-                //scanResultAdapter.notifyItemChanged(indexQuery)
+                scanResultAdapter.notifyItemChanged(indexQuery)
             } else {
                 with(result.device) {
                     Timber.i("Found BLE device! Name: ${name ?: "Unnamed"}, address: $address")
                     if(name == "ESP32-BLE"){
-                        blueDevice = this
-                        stopBleScan()
-                        ConnectionManager.connect(this, this@MainActivity)
+                        scanResults.add(result)
+                        scanResultAdapter.notifyItemInserted(scanResults.size - 1)
                     }
                 }
-                scanResults.add(result)
-                //scanResultAdapter.notifyItemInserted(scanResults.size - 1)
-
             }
         }
 
         override fun onScanFailed(errorCode: Int) {
             Timber.e("onScanFailed: code $errorCode")
+        }
+    }
+
+    /**
+     * Connection Listener
+     * When a connection is made the event is triggered in order to start
+     * Control activity so that user can manipulate house lighting
+     */
+    private val connectionEventListener by lazy {
+        ConnectionEventListener().apply {
+            onConnectionSetupComplete = { gatt ->
+                Intent(this@ScanActivity, ControlActivity::class.java).also {
+                    it.putExtra(BluetoothDevice.EXTRA_DEVICE, gatt.device)
+                    startActivity(it)
+                }
+                ConnectionManager.unregisterListener(this)
+            }
+            onDisconnect = {
+                runOnUiThread {
+                    alert {
+                        title = "Disconnected"
+                        message = "Disconnected or unable to connect to device."
+                        positiveButton("OK") {}
+                    }.show()
+                }
+            }
         }
     }
 
@@ -212,8 +252,3 @@ class MainActivity : AppCompatActivity() {
         ActivityCompat.requestPermissions(this, arrayOf(permission), requestCode)
     }
 }
-
-
-
-
-
