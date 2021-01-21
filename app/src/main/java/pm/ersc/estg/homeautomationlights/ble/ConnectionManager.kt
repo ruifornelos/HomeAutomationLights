@@ -18,10 +18,13 @@ import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
+import kotlinx.android.synthetic.main.activity_control.view.switchPower
 
 private const val GATT_MIN_MTU_SIZE = 23
 /** Maximum BLE MTU size as defined in gatt_api.h. */
 private const val GATT_MAX_MTU_SIZE = 517
+private const val BEDROOMCHAR = "4ac8a682-9736-4e5d-932b-e9b31405049c"
+
 
 object ConnectionManager {
 
