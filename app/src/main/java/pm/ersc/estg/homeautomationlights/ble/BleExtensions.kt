@@ -118,3 +118,9 @@ fun BluetoothGattDescriptor.isCccd() =
 
 fun ByteArray.toHexString(): String =
     joinToString(separator = " ", prefix = "0x") { String.format("%02X", it) }
+
+fun ByteArray.getUIntAt(idx: Int) =
+    ((this[idx].toUInt() and 0xFFu) shl 24) or
+            ((this[idx + 1].toUInt() and 0xFFu) shl 16) or
+            ((this[idx + 2].toUInt() and 0xFFu) shl 8) or
+            (this[idx + 3].toUInt() and 0xFFu)

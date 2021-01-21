@@ -20,7 +20,7 @@
             android:layout_weight="1"
             android:layout_width="wrap_content"
             android:layout_height="70dp"
-            android:src="@drawable/bed_clips"/>
+            android:src="@drawable/bed_clips" />
         <ImageButton
             android:id="@+id/KitchenButton"
             android:backgroundTint="@color/black"
@@ -63,34 +63,34 @@
         android:layout_below="@+id/linearB"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="25dp"
-        android:text="The light from xxx was selected"
+        android:text="@string/selection_example"
         android:textColor="@color/black"/>
 
-    <TextView
-        android:id="@+id/LuminosityLevels"
+    <Switch
+        android:id="@+id/switchPower"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/switch1"
+        android:layout_above="@+id/switchMode"
         android:layout_centerHorizontal="true"
-        android:text="Luminosity Level"
+        android:text="@string/off_on"
         android:layout_marginBottom="25dp"
         android:textColor="@color/black"
         />
 
     <Switch
-        android:id="@+id/switch1"
+        android:id="@+id/switchMode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Light"
+        android:text="@string/automatic"
         android:layout_centerInParent="true"/>
 
     <Button
         android:id="@+id/disconnect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/switch1"
+        android:layout_below="@+id/switchMode"
         android:layout_centerHorizontal="true"
-        android:hint="Disconnect from Device"
+        android:hint="@string/disconnect_from_device"
         android:textColorHint="@color/white"
         android:backgroundTint="@color/black"
         />

@@ -8,4 +8,11 @@
     <string name="kitchen_selected">Cozinha selecionada</string>
     <string name="library_selected">Escritório selecionado</string>
     <string name="bedroom_selected">Quarto selecionado</string>
+    <string name="automatic">Automático</string>
+    <string name="selection_example">Selecione uma divisão da casa</string>
+    <string name="disconnect_from_device">Desligar dispositivo</string>
+    <string name="automatic_mode">Modo automático</string>
+    <string name="manual_mode">Modo manual</string>
+    <string name="ledsON">Luzes Ligadas</string>
+    <string name="ledsOFF">Luzes Desligadas</string>
 </resources>
