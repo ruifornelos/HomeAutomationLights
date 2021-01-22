@@ -79,28 +79,28 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
                     when (roomSelected) {
                         1 -> {
                             if (!bathroomState) {
-                                ledStateChange(roomSelected)
+                                ledStateChange(roomSelected,255)
                                 Toast.makeText(this, getString(R.string.ledsON), Toast.LENGTH_SHORT)
                                     .show()
                             }
                         }
                         2 -> {
                             if (!kitchenState) {
-                                ledStateChange(roomSelected)
+                                ledStateChange(roomSelected,255)
                                 Toast.makeText(this, getString(R.string.ledsON), Toast.LENGTH_SHORT)
                                     .show()
                             }
                         }
                         3 -> {
                             if (!livingRoomState) {
-                                ledStateChange(roomSelected)
+                                ledStateChange(roomSelected,255)
                                 Toast.makeText(this, getString(R.string.ledsON), Toast.LENGTH_SHORT)
                                     .show()
                             }
                         }
                         4 -> {
                             if (!bedroomState) {
-                                ledStateChange(roomSelected)
+                                ledStateChange(roomSelected,255)
                                 Toast.makeText(this, getString(R.string.ledsON), Toast.LENGTH_SHORT)
                                     .show()
                             }
@@ -112,7 +112,7 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
                     Toast.makeText(this, getString(R.string.noRoomSelected), Toast.LENGTH_SHORT)
                         .show()
                 } else {
-                    ledStateChange(roomSelected)
+                    ledStateChange(roomSelected,0)
                     Toast.makeText(this, getString(R.string.ledsOFF), Toast.LENGTH_SHORT).show()
                 }
 
@@ -205,10 +205,8 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
         if (event != null && resume) {
             if (event.sensor.type == Sensor.TYPE_LIGHT) {
                 Timber.d("Lido: ${event.values[0]} | Conv: ${map(event.values[0].toInt(),0,1300,255,0)}")
-                if (event.values[0] >= 100) {
-                    // TODO: 17/01/2021 Diminuir brilho
-                } else {
-                    // TODO: 17/01/2021 Aumentar brilho
+                if (map(event.values[0].toInt(),0,1300,255,0) > 0) {
+                    ledStateChange(roomSelected,map(event.values[0].toInt(),0,1300,255,0))
                 }
             }
         }
@@ -221,21 +219,21 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
     }
 
-    private fun ledStateChange(room: Int) {
+    private fun ledStateChange(room: Int, lum: Int) {
         when (room) {
             1 -> {
                 bathroomState = if (!bathroomState) {
                     ConnectionManager.writeCharacteristic(
                         device,
                         bedroomChar,
-                        "bathroom 255".toByteArray(Charsets.UTF_8)
+                        "bathroom $lum".toByteArray(Charsets.UTF_8)
                     )
                     true
                 } else {
                     ConnectionManager.writeCharacteristic(
                         device,
                         bedroomChar,
-                        "bathroom 0".toByteArray(Charsets.UTF_8)
+                        "bathroom $lum".toByteArray(Charsets.UTF_8)
                     )
                     false
                 }
@@ -245,14 +243,14 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
                     ConnectionManager.writeCharacteristic(
                         device,
                         bedroomChar,
-                        "kitchen 255".toByteArray(Charsets.UTF_8)
+                        "kitchen $lum".toByteArray(Charsets.UTF_8)
                     )
                     true
                 } else {
                     ConnectionManager.writeCharacteristic(
                         device,
                         bedroomChar,
-                        "kitchen 0".toByteArray(Charsets.UTF_8)
+                        "kitchen $lum".toByteArray(Charsets.UTF_8)
                     )
                     false
                 }
@@ -262,14 +260,14 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
                     ConnectionManager.writeCharacteristic(
                         device,
                         bedroomChar,
-                        "living 255".toByteArray(Charsets.UTF_8)
+                        "living $lum".toByteArray(Charsets.UTF_8)
                     )
                     true
                 } else {
                     ConnectionManager.writeCharacteristic(
                         device,
                         bedroomChar,
-                        "living 0".toByteArray(Charsets.UTF_8)
+                        "living $lum".toByteArray(Charsets.UTF_8)
                     )
                     false
                 }
@@ -279,14 +277,14 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
                     ConnectionManager.writeCharacteristic(
                         device,
                         bedroomChar,
-                        "bedroom 255".toByteArray(Charsets.UTF_8)
+                        "bedroom $lum".toByteArray(Charsets.UTF_8)
                     )
                     true
                 } else {
                     ConnectionManager.writeCharacteristic(
                         device,
                         bedroomChar,
-                        "bedroom 0".toByteArray(Charsets.UTF_8)
+                        "bedroom $lum".toByteArray(Charsets.UTF_8)
                     )
                     false
                 }
