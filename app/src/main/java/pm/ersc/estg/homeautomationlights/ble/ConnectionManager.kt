@@ -13,12 +13,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
+import android.widget.Switch
+import pm.ersc.estg.homeautomationlights.R
 import timber.log.Timber
 import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
-import kotlinx.android.synthetic.main.activity_control.view.switchPower
 
 private const val GATT_MIN_MTU_SIZE = 23
 /** Maximum BLE MTU size as defined in gatt_api.h. */
@@ -33,6 +34,7 @@ object ConnectionManager {
     private val deviceGattMap = ConcurrentHashMap<BluetoothDevice, BluetoothGatt>()
     private val operationQueue = ConcurrentLinkedQueue<BleOperationType>()
     private var pendingOperation: BleOperationType? = null
+    var bedroomValue: String? = null
 
     fun servicesOnDevice(device: BluetoothDevice): List<BluetoothGattService>? =
         deviceGattMap[device]?.services
@@ -383,8 +385,14 @@ object ConnectionManager {
             with(characteristic) {
                 when (status) {
                     BluetoothGatt.GATT_SUCCESS -> {
-                        Timber.i("Read characteristic $uuid | value: ${value.toHexString()}")
-                        listeners.forEach { it.get()?.onCharacteristicRead?.invoke(gatt.device, this) }
+                        Timber.i("Read characteristic $uuid | value: ${String(value, Charsets.UTF_8)}")
+                        bedroomValue = String(value, Charsets.UTF_8)
+                        listeners.forEach {
+                            it.get()?.onCharacteristicRead?.invoke(
+                                gatt.device,
+                                this
+                            )
+                        }
                     }
                     BluetoothGatt.GATT_READ_NOT_PERMITTED -> {
                         Timber.e("Read not permitted for $uuid!")
@@ -408,7 +416,7 @@ object ConnectionManager {
             with(characteristic) {
                 when (status) {
                     BluetoothGatt.GATT_SUCCESS -> {
-                        Timber.i("Wrote to characteristic $uuid | value: ${value.toHexString()}")
+                        Timber.i("Wrote to characteristic $uuid | value: ${String(value,Charsets.UTF_8)}")
                         listeners.forEach { it.get()?.onCharacteristicWrite?.invoke(gatt.device, this) }
                     }
                     BluetoothGatt.GATT_WRITE_NOT_PERMITTED -> {
@@ -430,7 +438,7 @@ object ConnectionManager {
             characteristic: BluetoothGattCharacteristic
         ) {
             with(characteristic) {
-                Timber.i("Characteristic $uuid changed | value: ${value.toHexString()}")
+                Timber.i("Characteristic $uuid changed | value: ${String(value,Charsets.UTF_8)}")
                 listeners.forEach { it.get()?.onCharacteristicChanged?.invoke(gatt.device, this) }
             }
         }
@@ -443,7 +451,7 @@ object ConnectionManager {
             with(descriptor) {
                 when (status) {
                     BluetoothGatt.GATT_SUCCESS -> {
-                        Timber.i("Read descriptor $uuid | value: ${value.toHexString()}")
+                        Timber.i("Read descriptor $uuid | value: ${String(value,Charsets.UTF_8)}")
                         listeners.forEach { it.get()?.onDescriptorRead?.invoke(gatt.device, this) }
                     }
                     BluetoothGatt.GATT_READ_NOT_PERMITTED -> {
@@ -468,7 +476,7 @@ object ConnectionManager {
             with(descriptor) {
                 when (status) {
                     BluetoothGatt.GATT_SUCCESS -> {
-                        Timber.i("Wrote to descriptor $uuid | value: ${value.toHexString()}")
+                        Timber.i("Wrote to descriptor $uuid | value: ${String(value,Charsets.UTF_8)}")
 
                         if (isCccd()) {
                             onCccdWrite(gatt, value, characteristic)
