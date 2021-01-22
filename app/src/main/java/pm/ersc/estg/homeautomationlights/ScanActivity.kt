@@ -27,6 +27,7 @@ import timber.log.Timber
 import kotlinx.android.synthetic.main.activity_scan.scan_button
 import kotlinx.android.synthetic.main.activity_scan.scan_results_recycler_view
 import pm.ersc.estg.homeautomationlights.ble.ConnectionEventListener
+import java.util.*
 
 
 private const val ENABLE_BLUETOOTH_REQUEST_CODE = 1
