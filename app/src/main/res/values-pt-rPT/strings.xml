@@ -15,4 +15,6 @@
     <string name="manual_mode">Modo manual</string>
     <string name="ledsON">Luzes Ligadas</string>
     <string name="ledsOFF">Luzes Desligadas</string>
+    <string name="noRoomSelected">Escolha uma divisão</string>
+    <string name="smartphone_sensor">Sensor Telemóvel</string>
 </resources>
