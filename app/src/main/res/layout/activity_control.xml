@@ -70,25 +70,45 @@
         android:id="@+id/switchPower"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/switchMode"
+        android:layout_below="@+id/divisionPrint"
         android:layout_centerHorizontal="true"
         android:text="@string/off_on"
         android:layout_marginBottom="25dp"
         android:textColor="@color/black"
         />
 
-    <Switch
-        android:id="@+id/switchMode"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/linearC"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/automatic"
-        android:layout_centerInParent="true"/>
+        android:layout_below="@+id/switchPower"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/OnFieldSensor"
+            android:backgroundTint="@color/black"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="LDR"
+            android:layout_marginRight="3dp"/>
+
+        <Button
+            android:id="@+id/PhoneSensor"
+            android:backgroundTint="@color/black"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/smartphone_sensor"/>
+    </LinearLayout>
+
+
 
     <Button
         android:id="@+id/disconnect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/switchMode"
+        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:hint="@string/disconnect_from_device"
         android:textColorHint="@color/white"

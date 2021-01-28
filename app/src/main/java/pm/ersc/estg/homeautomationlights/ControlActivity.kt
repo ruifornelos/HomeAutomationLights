@@ -16,7 +16,9 @@ import pm.ersc.estg.homeautomationlights.ble.ConnectionManager
 import timber.log.Timber
 
 private const val BEDROOMCHARUUID = "4ac8a682-9736-4e5d-932b-e9b31405049c"
-private const val READCHARUUID = "0972ef8c-7613-4075-ad52-756f33d4da91"
+private const val KITCHENCHARUUID = "ad413ba7-b596-41be-838a-f858e67d1561"
+private const val BATHROOMCHARUUID = "39605286-762c-4c00-af79-56a806c3980c"
+private const val LIBRARYCHARUUID = "5ef4748f-a961-4a98-8d37-bbba49d22fd2"
 
 class ControlActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var mSensorManager: SensorManager
@@ -24,12 +26,15 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
     private var resume = false;
     private lateinit var device: BluetoothDevice
     private lateinit var bedroomChar: BluetoothGattCharacteristic
-    private lateinit var readChar: BluetoothGattCharacteristic
+    private lateinit var kitchenChar: BluetoothGattCharacteristic
+    private lateinit var bathroomChar: BluetoothGattCharacteristic
+    private lateinit var libraryChar: BluetoothGattCharacteristic
     private var bathroomState: Boolean = false
     private var livingRoomState: Boolean = false
     private var kitchenState: Boolean = false
     private var bedroomState: Boolean = false
     private var roomSelected: Int = 0
+    private var isSensorPhone: Boolean = false
     private val characteristics by lazy {
         ConnectionManager.servicesOnDevice(device)?.flatMap { service ->
             service.characteristics ?: listOf()
@@ -47,15 +52,19 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
 
         setContentView(R.layout.activity_control)
 
+        /*
+        Stores characteristics pointers in class attribute
+         */
         characteristics.forEach { characteristic ->
             if (characteristic.uuid.toString() == BEDROOMCHARUUID)
                 bedroomChar = characteristic
-            if (characteristic.uuid.toString() == READCHARUUID) {
-                readChar = characteristic
-            }
+            if (characteristic.uuid.toString() == KITCHENCHARUUID)
+                kitchenChar = characteristic
+            if (characteristic.uuid.toString() == BATHROOMCHARUUID)
+                bathroomChar = characteristic
+            if (characteristic.uuid.toString() == LIBRARYCHARUUID)
+                libraryChar = characteristic
         }
-
-        ConnectionManager.readCharacteristic(device, bedroomChar)
 
         //Variables (Buttons and Textviews)////////////////////////////////////
         val divisionTextView = findViewById<TextView>(R.id.divisionPrint)
@@ -65,7 +74,8 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
         val libraryButton = findViewById<ImageButton>(R.id.LibraryButton)
         val kitchenButton = findViewById<ImageButton>(R.id.KitchenButton)
         val bathroomButton = findViewById<ImageButton>(R.id.BathroomButton)
-        val switchMode = findViewById<Switch>(R.id.switchMode)
+        val sensorPhone = findViewById<Button>(R.id.PhoneSensor)
+        val sensorLDR = findViewById<Button>(R.id.OnFieldSensor)
         //Lighting Sensor //////////////////////////////////////////////////////
         mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         mLuminosity = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
@@ -78,66 +88,104 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
                 } else {
                     when (roomSelected) {
                         1 -> {
-                            if (!bathroomState) {
-                                ledStateChange(roomSelected,255)
+                            //if (bathroomState == false) {
+                                ledStateChange(roomSelected, 255)
                                 Toast.makeText(this, getString(R.string.ledsON), Toast.LENGTH_SHORT)
                                     .show()
-                            }
+                                bathroomState = true
+                            //}
                         }
                         2 -> {
-                            if (!kitchenState) {
-                                ledStateChange(roomSelected,255)
+                            //if (kitchenState == false) {
+                                ledStateChange(roomSelected, 255)
                                 Toast.makeText(this, getString(R.string.ledsON), Toast.LENGTH_SHORT)
                                     .show()
-                            }
+                                kitchenState = true
+                            //}
                         }
                         3 -> {
-                            if (!livingRoomState) {
-                                ledStateChange(roomSelected,255)
+                            //if (livingRoomState == false) {
+                                ledStateChange(roomSelected, 255)
                                 Toast.makeText(this, getString(R.string.ledsON), Toast.LENGTH_SHORT)
                                     .show()
-                            }
+                                livingRoomState = true
+                            //}
                         }
                         4 -> {
-                            if (!bedroomState) {
-                                ledStateChange(roomSelected,255)
+                            //if (bedroomState == false) {
+                                ledStateChange(roomSelected, 255)
                                 Toast.makeText(this, getString(R.string.ledsON), Toast.LENGTH_SHORT)
                                     .show()
-                            }
+                                bedroomState = true
+                            //}
                         }
                     }
                 }
             } else {
-                if (roomSelected == 0) {
-                    Toast.makeText(this, getString(R.string.noRoomSelected), Toast.LENGTH_SHORT)
-                        .show()
-                } else {
-                    ledStateChange(roomSelected,0)
-                    Toast.makeText(this, getString(R.string.ledsOFF), Toast.LENGTH_SHORT).show()
-                }
+                when (roomSelected) {
+                    1 -> {
 
+                        ledStateChange(roomSelected, 0)
+                        Toast.makeText(this, getString(R.string.ledsOFF), Toast.LENGTH_SHORT)
+                            .show()
+                        bathroomState = false
+                    }
+                    2 -> {
+                        ledStateChange(roomSelected, 0)
+                        Toast.makeText(this, getString(R.string.ledsOFF), Toast.LENGTH_SHORT)
+                            .show()
+                        kitchenState = false
+
+                    }
+                    3 -> {
+
+                        ledStateChange(roomSelected, 0)
+                        Toast.makeText(this, getString(R.string.ledsOFF), Toast.LENGTH_SHORT)
+                            .show()
+                        livingRoomState = false
+
+                    }
+                    4 -> {
+                        ledStateChange(roomSelected, 0)
+                        Toast.makeText(this, getString(R.string.ledsOFF), Toast.LENGTH_SHORT)
+                            .show()
+                        bedroomState = false
+
+                    }
+                }
+                isSensorPhone = false
+                resume = false
+                mSensorManager.unregisterListener(this)
+                ledStateChange(roomSelected, 0)
+                Toast.makeText(this, getString(R.string.ledsOFF), Toast.LENGTH_SHORT).show()
             }
         }
-        //SwitchMode Button ////////////////////////////////////////////////////////
-        switchMode?.setOnCheckedChangeListener { _, onSwitch ->
-            if (onSwitch) {
-                if (roomSelected == 0) {
-                    Toast.makeText(this, getString(R.string.noRoomSelected), Toast.LENGTH_SHORT)
-                        .show()
-                } else {
-                    resume = true
-                    mSensorManager.registerListener(
-                        this,
-                        mLuminosity,
-                        SensorManager.SENSOR_DELAY_NORMAL
-                    )
-                    Toast.makeText(this, getString(R.string.automatic_mode), Toast.LENGTH_SHORT)
-                        .show()
-                }
-            } else {
+        //Sensor Phone Button ////////////////////////////////////////////////////////
+        sensorPhone?.setOnClickListener() {
+            if (roomSelected == 0) {
+                Toast.makeText(this, getString(R.string.noRoomSelected), Toast.LENGTH_SHORT)
+                    .show()
+            } else if (!isSensorPhone) {
+                resume = true
+                mSensorManager.registerListener(
+                    this,
+                    mLuminosity,
+                    SensorManager.SENSOR_DELAY_NORMAL
+                )
+                Toast.makeText(this, getString(R.string.automatic_mode), Toast.LENGTH_SHORT)
+                    .show()
+            } else if (isSensorPhone) {
                 resume = false
-                Toast.makeText(this, getString(R.string.manual_mode), Toast.LENGTH_SHORT).show()
+                isSensorPhone = false
+                Toast.makeText(this, "Phone Sensor deactivated", Toast.LENGTH_SHORT).show()
             }
+        }
+        //On field Sensor Button ////////////////////////////////////////////////////////
+        sensorLDR?.setOnClickListener() {
+            isSensorPhone = false
+            resume = false
+            mSensorManager.unregisterListener(this)
+            if (roomSelected != 0) ledStateChange(roomSelected, -1)
         }
 
         bathroomButton?.setOnClickListener() {
@@ -204,12 +252,23 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent?) {
         if (event != null && resume) {
             if (event.sensor.type == Sensor.TYPE_LIGHT) {
-                Timber.d("Lido: ${event.values[0]} | Conv: ${map(event.values[0].toInt(),0,1300,255,0)}")
-                if (map(event.values[0].toInt(),0,1300,255,0) > 0) {
-                    ledStateChange(roomSelected,map(event.values[0].toInt(),0,1300,255,0))
-                }
+                Timber.d(
+                    "Lido: ${event.values[0]} | Conv: ${
+                        map(
+                            event.values[0].toInt(),
+                            0,
+                            1300,
+                            255,
+                            0
+                        )
+                    }"
+                )
+                if (map(event.values[0].toInt(), 0, 3000, 255, 0) > 0) {
+                    ledStateChange(roomSelected, map(event.values[0].toInt(), 0, 1300, 255, 0))
+                } //else ledStateChange(roomSelected, 0)
             }
         }
+
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
@@ -225,14 +284,14 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
                 bathroomState = if (!bathroomState) {
                     ConnectionManager.writeCharacteristic(
                         device,
-                        bedroomChar,
+                        bathroomChar,
                         "bathroom $lum".toByteArray(Charsets.UTF_8)
                     )
                     true
                 } else {
                     ConnectionManager.writeCharacteristic(
                         device,
-                        bedroomChar,
+                        bathroomChar,
                         "bathroom $lum".toByteArray(Charsets.UTF_8)
                     )
                     false
@@ -242,14 +301,14 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
                 kitchenState = if (!kitchenState) {
                     ConnectionManager.writeCharacteristic(
                         device,
-                        bedroomChar,
+                        kitchenChar,
                         "kitchen $lum".toByteArray(Charsets.UTF_8)
                     )
                     true
                 } else {
                     ConnectionManager.writeCharacteristic(
                         device,
-                        bedroomChar,
+                        kitchenChar,
                         "kitchen $lum".toByteArray(Charsets.UTF_8)
                     )
                     false
@@ -259,14 +318,14 @@ class ControlActivity : AppCompatActivity(), SensorEventListener {
                 livingRoomState = if (!livingRoomState) {
                     ConnectionManager.writeCharacteristic(
                         device,
-                        bedroomChar,
+                        libraryChar,
                         "living $lum".toByteArray(Charsets.UTF_8)
                     )
                     true
                 } else {
                     ConnectionManager.writeCharacteristic(
                         device,
-                        bedroomChar,
+                        libraryChar,
                         "living $lum".toByteArray(Charsets.UTF_8)
                     )
                     false

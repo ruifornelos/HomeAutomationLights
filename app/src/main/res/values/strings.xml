@@ -16,4 +16,5 @@
     <string name="ledsON">Lights ON</string>
     <string name="ledsOFF">Lights OFF</string>
     <string name="noRoomSelected">Please select a room.</string>
+    <string name="smartphone_sensor">SmartPhone Sensor</string>
 </resources>
